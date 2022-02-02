@@ -12,6 +12,9 @@ public class Apple {
     this.texture = texture;
     this.applePosition = new GridPoint2();
 }
+public GridPoint2 checkApplePos() {
+        return applePosition;
+}
 
 public void randomizeApplePosition () {
         applePosition.x = ((int) (Math.random()* SnakeGame.WINDOW_WIDTH/texture.getWidth()))* texture.getWidth();

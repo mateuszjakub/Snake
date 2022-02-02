@@ -17,9 +17,12 @@ public class SnakeGame extends ApplicationAdapter {
 	private Texture snakePiece;
 	private Texture appleImg;
 	private Texture gameOverImg;
+	private Texture winImg;
 	private Snake snake;
 	private Apple apple;
 	private boolean gameOver;
+	private boolean collision;
+	private  boolean win;
 
 	@Override
 	public void create () {
@@ -27,6 +30,7 @@ public class SnakeGame extends ApplicationAdapter {
 		snakePiece = new Texture("snake_part.png");
 		appleImg = new Texture("apple.png");
 		gameOverImg = new Texture("game_over.png");
+		winImg = new Texture("win.png");
 		snake = new Snake(snakePiece);
 		apple = new Apple(appleImg);
 		initializeNewGame();
@@ -44,6 +48,8 @@ public class SnakeGame extends ApplicationAdapter {
 
 		if (gameOver)
 			batch.draw(gameOverImg, WINDOW_WIDTH/2-gameOverImg.getWidth()/2, WINDOW_HEIGHT/2-gameOverImg.getHeight()/2);
+		if (win)
+			batch.draw(winImg, WINDOW_WIDTH/2-gameOverImg.getWidth()/2, WINDOW_HEIGHT/2-gameOverImg.getHeight()/2);
 
 		batch.end();
 	}
@@ -55,32 +61,57 @@ public class SnakeGame extends ApplicationAdapter {
 		snakePiece.dispose();
 		appleImg.dispose();
 		gameOverImg.dispose();
+		winImg.dispose();
 	}
 
 	private void update() {
-	if (!gameOver) {
-		snake.act(Gdx.graphics.getDeltaTime());
+		if (!gameOver&&!win) {
+			snake.act(Gdx.graphics.getDeltaTime());
 
-		if (snake.isHeadEating(apple.applePosition)) {
-			snake.rise();
-			apple.randomizeApplePosition();
-		}
+			if (snake.isHeadEating(apple.applePosition)) {
+				if (snake.getSize() == snake.getMaxSnakeSize()-1) {
+					win = true;
+				}
 
-		if (snake.hasHitHimself()) {
-			gameOver = true;
+				if (!win) {
+					snake.rise();
+					findAppleSpot();
+				}
+			}
+
+			if (snake.hasHitHimself()) {
+				gameOver = true;
+			}
+
+		} else {
+			if (Gdx.input.isKeyJustPressed(Input.Keys.F2))
+				initializeNewGame();
 		}
 	}
-	else {
-		if (Gdx.input.isKeyJustPressed(Input.Keys.F2))
-			initializeNewGame();
-	}
-	}
+
+
 
 	private void initializeNewGame() {
 		snake.initialize();
-		apple.randomizeApplePosition();
+		findAppleSpot();
 		gameOver = false;
+		win = false;
 	}
 
+	private void findAppleSpot() {
+		do {
+			apple.randomizeApplePosition();
+			for (int i = 0; i < snake.getSize(); i++) {
+				if (snake.checkSnakeSegment(i).equals(apple.checkApplePos())) {
+					collision = true;
+					break;
+				} else {
+					collision = false;
+				}
+			}
+		}
+		while (collision == true);
+		collision = false;
+		}
 
 }

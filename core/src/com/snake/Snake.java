@@ -18,9 +18,11 @@ public class Snake {
     private MovementDirection direction;
     private float timeSinceLastAct;
     private boolean canChangeDirection;
+    private int maxSnakeSize;
 
     public Snake(Texture texture) {
         this.texture = texture;
+        this.maxSnakeSize = (SnakeGame.WINDOW_WIDTH/ texture.getWidth())*(SnakeGame.WINDOW_HEIGHT/ texture.getHeight());
         snakeSegments = new ArrayList<>();
     }
 
@@ -78,6 +80,17 @@ public class Snake {
             direction = newDirection;
             canChangeDirection = false;
         }
+    }
+    public GridPoint2 checkSnakeSegment(int i) {
+           return  snakeSegments.get(i);
+        }
+
+    public int getSize() {
+        return snakeSegments.size();
+    }
+
+    public int getMaxSnakeSize() {
+        return maxSnakeSize;
     }
 
     private void move() {
