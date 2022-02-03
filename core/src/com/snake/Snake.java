@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
 
 import java.util.ArrayList;
@@ -14,14 +15,29 @@ enum MovementDirection {UP, RIGHT, DOWN, LEFT}
 
 public class Snake {
     private final Texture texture;
+    private TextureRegion[] headTexture;
+    private TextureRegion[] tailTexture;
     private final List<GridPoint2> snakeSegments;
     private MovementDirection direction;
+    private MovementDirection tailDirection;
     private float timeSinceLastAct;
     private boolean canChangeDirection;
-    private int maxSnakeSize;
+    private final int maxSnakeSize;
 
-    public Snake(Texture texture) {
+    public Snake(Texture texture, Texture headMultiTexture) {
         this.texture = texture;
+        headTexture = new TextureRegion[]{
+                new TextureRegion(headMultiTexture, 0, 0, texture.getWidth(), texture.getHeight()),
+                new TextureRegion(headMultiTexture, 1 * texture.getWidth(), 0, texture.getWidth(), texture.getHeight()),
+                new TextureRegion(headMultiTexture, 2 * texture.getWidth(), 0, texture.getWidth(), texture.getHeight()),
+                new TextureRegion(headMultiTexture, 3 * texture.getWidth(), 0, texture.getWidth(), texture.getHeight()),
+                };
+        tailTexture = new TextureRegion[]{
+                new TextureRegion(headMultiTexture, 4 * texture.getWidth(), 0, texture.getWidth(), texture.getHeight()),
+                new TextureRegion(headMultiTexture, 5 * texture.getWidth(), 0, texture.getWidth(), texture.getHeight()),
+                new TextureRegion(headMultiTexture, 6 * texture.getWidth(), 0, texture.getWidth(), texture.getHeight()),
+                new TextureRegion(headMultiTexture, 7 * texture.getWidth(), 0, texture.getWidth(), texture.getHeight()),
+                };
         this.maxSnakeSize = (SnakeGame.WINDOW_WIDTH/ texture.getWidth())*(SnakeGame.WINDOW_HEIGHT/ texture.getHeight());
         snakeSegments = new ArrayList<>();
     }
@@ -29,6 +45,7 @@ public class Snake {
     public void initialize() {
         timeSinceLastAct = 0;
         direction = MovementDirection.RIGHT;
+        tailDirection = MovementDirection.RIGHT;
         snakeSegments.clear();
         this.snakeSegments.add(new GridPoint2(100,100));
         this.snakeSegments.add(new GridPoint2(80,100));
@@ -60,6 +77,7 @@ public class Snake {
             canChangeDirection = true;
             move();
         }
+        determinateTailDirection();
     }
 
     private void handleDirectionChange() {
@@ -120,8 +138,48 @@ public class Snake {
         }
 
     public void draw(Batch batch) {
-        for (GridPoint2 pos : snakeSegments)
-            batch.draw(texture, pos.x, pos.y);
+        //rysowanie ciala weza
+        GridPoint2 body = new GridPoint2();
+        for (int i = 1; i<snakeSegments.size()-1; i++) {
+            body = snakeSegments.get(i);
+            batch.draw(texture, body.x, body.y);
+        }
+
+        //rysowanie glowy weza
+        batch.draw(headTexture[direction.ordinal()], head().x, head().y);
+
+        //rysowanie ogona weza
+        batch.draw(tailTexture[tailDirection.ordinal()], snakeSegments.get(snakeSegments.size()-1).x, snakeSegments.get(snakeSegments.size()-1).y);
+    }
+
+    private void determinateTailDirection() {
+        GridPoint2 segmentBeforeTail = snakeSegments.get(snakeSegments.size()-2);
+        GridPoint2 tail = snakeSegments.get(snakeSegments.size()-1);
+
+        if (tail.x == 0 && segmentBeforeTail.x == SnakeGame.WINDOW_WIDTH - texture.getWidth()){
+            tailDirection = MovementDirection.LEFT;
+        }
+        else if (tail.x == SnakeGame.WINDOW_WIDTH - texture.getWidth() && segmentBeforeTail.x == 0){
+            tailDirection = MovementDirection.RIGHT;
+        }
+        else if (tail.y == 0 && segmentBeforeTail.y == SnakeGame.WINDOW_HEIGHT - texture.getHeight()){
+            tailDirection = MovementDirection.DOWN;
+        }
+        else if (tail.y == SnakeGame.WINDOW_HEIGHT - texture.getHeight() && segmentBeforeTail.y == 0){
+            tailDirection = MovementDirection.UP;
+        }
+        else if (segmentBeforeTail.x>tail.x) {
+            tailDirection = MovementDirection.RIGHT;
+        }
+        else if (segmentBeforeTail.x<tail.x) {
+            tailDirection = MovementDirection.LEFT;
+        }
+        else if (segmentBeforeTail.y>tail.y) {
+            tailDirection = MovementDirection.UP;
+        }
+        else if (segmentBeforeTail.y<tail.y) {
+            tailDirection = MovementDirection.DOWN;
+        }
     }
 
     private GridPoint2 head() {

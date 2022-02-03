@@ -18,6 +18,7 @@ public class SnakeGame extends ApplicationAdapter {
 	private Texture appleImg;
 	private Texture gameOverImg;
 	private Texture winImg;
+	private Texture headImg;
 	private Snake snake;
 	private Apple apple;
 	private boolean gameOver;
@@ -31,7 +32,8 @@ public class SnakeGame extends ApplicationAdapter {
 		appleImg = new Texture("apple.png");
 		gameOverImg = new Texture("game_over.png");
 		winImg = new Texture("win.png");
-		snake = new Snake(snakePiece);
+		headImg = new Texture("snake_head.png");
+		snake = new Snake(snakePiece, headImg);
 		apple = new Apple(appleImg);
 		initializeNewGame();
 	}
@@ -62,6 +64,7 @@ public class SnakeGame extends ApplicationAdapter {
 		appleImg.dispose();
 		gameOverImg.dispose();
 		winImg.dispose();
+		headImg.dispose();
 	}
 
 	private void update() {
